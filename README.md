@@ -40,6 +40,21 @@ git clone https://github.com/OpenPerceptionX/TCP.git
 cd TCP
 conda env create -f environment.yml --name TCP
 conda activate TCP
+
+Alternatively, a helper script is provided to create the conda env and install the CARLA Python client:
+
+```
+./scripts/setup_env.sh        # creates 'TCP' env and installs carla wheel/egg from CARLA_ROOT if present
+./scripts/install_carla.sh   # optionally download and extract CARLA 0.9.10.1 to ~/carla (interactive)
+```
+
+After creating the environment you can verify it with:
+
+```
+conda activate TCP
+python scripts/check_env.py
+```
+```
 ```
 
 ```
@@ -78,7 +93,7 @@ First, launch the carla server,
 cd CARLA_ROOT
 ./CarlaUE4.sh --world-port=2000 -opengl
 ```
-Set the carla path, routes file, scenario file, model ckpt, and data path for evaluation in ``leaderboard/scripts/run_evaluation.sh``.
+Set the CARLA path (export CARLA_ROOT), routes file, scenario file, model ckpt, and data path for evaluation in ``leaderboard/scripts/run_evaluation.sh``. By default this script now points TEAM_CONFIG to `/home/cthalia/E2E/CLOSE_LOOP_E2E/TCP_Surya/best_epoch=24-val_loss=0.640.ckpt` — you can override it by exporting `TEAM_CONFIG=/path/to/your.ckpt` before running the script.
 
 Start the evaluation
 

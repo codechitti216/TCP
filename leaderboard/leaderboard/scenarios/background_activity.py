@@ -74,10 +74,17 @@ class BackgroundActivity(BasicScenario):
                                                                 random_location=True,
                                                                 rolename='background')
 
+        print(f"[DEBUG] Requested {amount} new background actors")
         if new_actors is None:
+            print("[ERROR] Unable to add background activity: all spawn points were occupied")
+            spawn_points = CarlaDataProvider.get_world().get_map().get_spawn_points()
+            for i, sp in enumerate(spawn_points):
+                actors_at_spawn = CarlaDataProvider.get_world().get_actors().filter(lambda actor: actor.get_location().distance(sp.location) < 2.0)
+                print(f"[DEBUG] Spawn point {i}: {len(actors_at_spawn)} actors present.")
             raise Exception("Error: Unable to add the background activity, all spawn points were occupied")
 
         for _actor in new_actors:
+            print(f"[DEBUG] Background actor spawned: {_actor}")
             self.other_actors.append(_actor)
 
     def _create_behavior(self):

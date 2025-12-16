@@ -154,7 +154,7 @@ evaluation:
 # -----------------------------------------------------------------------------
 model:
   # Path to the trained TCP model checkpoint
-  checkpoint: "path/to/model/checkpoint.pth"
+  checkpoint: "/home/cthalia/E2E/CLOSE_LOOP_E2E/TCP_Surya/best_epoch=24-val_loss=0.640.ckpt"
   
   # Device to run inference on
   device: "cuda"

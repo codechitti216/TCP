@@ -207,13 +207,20 @@ class AgentWrapper(object):
                                                      roll=sensor_spec['roll'],
                                                      yaw=sensor_spec['yaw'])
                 # create sensor
+                print(f"[DEBUG] Spawning sensor: {sensor_spec['id']} at location {sensor_location} with rotation {sensor_rotation}")
                 sensor_transform = carla.Transform(sensor_location, sensor_rotation)
                 sensor = CarlaDataProvider.get_world().spawn_actor(bp, sensor_transform, vehicle)
+                if sensor:
+                    print(f"[DEBUG] Sensor spawned successfully: {sensor}")
+                else:
+                    print(f"[ERROR] Failed to spawn sensor: {sensor_spec['id']} at location {sensor_location}")
+
             # setup callback
             sensor.listen(CallBack(sensor_spec['id'], sensor_spec['type'], sensor, self._agent.sensor_interface))
             self._sensors_list.append(sensor)
 
         # Tick once to spawn the sensors
+        print("[DEBUG] Ticking the world to finalize sensor spawning")
         CarlaDataProvider.get_world().tick()
 
 

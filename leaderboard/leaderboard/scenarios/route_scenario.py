@@ -18,6 +18,7 @@ import os
 import py_trees
 
 import carla
+import time
 
 from agents.navigation.local_planner import RoadOption
 
@@ -186,6 +187,14 @@ class RouteScenario(BasicScenario):
 		Setup all relevant parameters and create scenarios along route
 		"""
 		self.config = config
+		# ensure lists used in cleanup are initialized
+		self.other_actors = []
+		# make sure CarlaDataProvider has the current world reference
+		try:
+			CarlaDataProvider.set_world(world)
+		except Exception:
+			# defensive: ignore if setting world fails here; caller should have set it
+			pass
 		self.route = None
 		self.sampled_scenarios_definitions = None
 
@@ -251,9 +260,56 @@ class RouteScenario(BasicScenario):
 		elevate_transform = self.route[0][0]
 		elevate_transform.location.z += 0.5
 
-		ego_vehicle = CarlaDataProvider.request_new_actor('vehicle.lincoln.mkz2017',
-														  elevate_transform,
-														  rolename='hero')
+		# Try to spawn ego vehicle with retries because world may not be immediately ready
+		# Wait for CarlaDataProvider world to be ready
+		start_time = time.time()
+		while CarlaDataProvider.get_world() is None and (time.time() - start_time) < 10.0:
+			print("[DEBUG] Waiting for CarlaDataProvider world to be ready...")
+			time.sleep(0.5)
+		if CarlaDataProvider.get_world() is None:
+			raise RuntimeError("World is not ready for ego spawn after waiting")
+		# If an ego vehicle already exists (spawned earlier by the evaluator), reuse it
+		ego_vehicle = None
+		try:
+			world_actors = CarlaDataProvider.get_world().get_actors().filter('vehicle.*')
+		except Exception:
+			world_actors = []
+
+		# First: try to find an existing actor explicitly named 'hero' (common default)
+		for car in world_actors:
+			try:
+				if 'role_name' in car.attributes and car.attributes['role_name'] == 'hero':
+					ego_vehicle = car
+					print(f"[DEBUG] Reusing existing ego vehicle with role_name=hero (found {car.id})")
+					break
+			except Exception:
+				continue
+
+		# Next: if the scenario configuration explicitly lists ego_vehicles, try to match by those role names
+		if ego_vehicle is None and hasattr(self.config, 'ego_vehicles') and self.config.ego_vehicles:
+			role_names = [v.rolename for v in self.config.ego_vehicles]
+			for car in world_actors:
+				try:
+					if 'role_name' in car.attributes and car.attributes['role_name'] in role_names:
+						ego_vehicle = car
+						print(f"[DEBUG] Reusing existing ego vehicle with role_name={car.attributes['role_name']}")
+						break
+				except Exception:
+					continue
+
+		# If no existing ego vehicle is found, try to spawn one with retries
+		if ego_vehicle is None:
+			for attempt in range(5):
+				try:
+					ego_vehicle = CarlaDataProvider.request_new_actor('vehicle.lincoln.mkz2017',
+						  elevate_transform,
+						  rolename='hero')
+					break
+				except RuntimeError as e:
+					print(f"Warning: failed to spawn ego vehicle (attempt {attempt+1}/5): {e}")
+					time.sleep(1.0)
+			if ego_vehicle is None:
+				raise RuntimeError("Failed to spawn ego vehicle after multiple attempts")
 
 		spectator = CarlaDataProvider.get_world().get_spectator()
 		ego_trans = ego_vehicle.get_transform()

@@ -18,6 +18,7 @@ import numpy.random as random
 from six import iteritems
 
 import carla
+import time
 
 
 def calculate_velocity(actor):
@@ -193,6 +194,12 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
         Set the world and world settings
         """
         CarlaDataProvider._world = world
+        print(f"[CDP.set_world] set world: {world} (CarlaDataProvider id: {id(CarlaDataProvider)})")
+        try:
+            import traceback
+            traceback.print_stack(limit=5)
+        except Exception:
+            pass
         CarlaDataProvider._sync_flag = world.get_settings().synchronous_mode
         CarlaDataProvider._map = world.get_map()
         CarlaDataProvider._blueprint_library = world.get_blueprint_library()
@@ -534,7 +541,60 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
         """
         This method tries to create a new actor, returning it if successful (None otherwise).
         """
+        print(f"[CDP.request_new_actor] model: {model} (CarlaDataProvider id: {id(CarlaDataProvider)})")
+        print(f"[CDP.request_new_actor] spawn_point: {spawn_point}")
+        # Guard: if world or blueprint library is not initialized, try to reinitialize from client with retries
+        print(f"[CDP.request_new_actor] _world is None: {CarlaDataProvider._world is None}, _blueprint_library is None: {CarlaDataProvider._blueprint_library is None}, _client is None: {CarlaDataProvider._client is None}")
+        if CarlaDataProvider._world is None or CarlaDataProvider._blueprint_library is None:
+            timeout = 10.0  # seconds
+            start_time = time.time()
+            while (CarlaDataProvider._world is None or CarlaDataProvider._blueprint_library is None) and (time.time() - start_time) < timeout:
+                if CarlaDataProvider._client is not None:
+                    try:
+                        world = CarlaDataProvider._client.get_world()
+                        CarlaDataProvider.set_world(world)
+                        print("Info: CarlaDataProvider._world/_blueprint_library reinitialized from client.get_world()")
+                        print(f"[CDP.request_new_actor] After reinit: _world is None: {CarlaDataProvider._world is None}, _blueprint_library is None: {CarlaDataProvider._blueprint_library is None}")
+                        break
+                    except Exception as e:
+                        print(f"Warning: CarlaDataProvider reinit attempt failed: {e}")
+                else:
+                    print("Warning: CarlaDataProvider._client is None while trying to reinit _world/_blueprint_library")
+                time.sleep(0.5)
+
+            if CarlaDataProvider._world is None or CarlaDataProvider._blueprint_library is None:
+                # Extra debug information to trace why world or blueprint library is missing
+                try:
+                    import traceback
+                    print("[CDP.request_new_actor] PRE-RAISE STATE:")
+                    print(f"  _world: {CarlaDataProvider._world}")
+                    print(f"  _world id: {id(CarlaDataProvider._world) if CarlaDataProvider._world else None}")
+                    print(f"  _blueprint_library: {CarlaDataProvider._blueprint_library}")
+                    print(f"  _client: {CarlaDataProvider._client}")
+                    traceback.print_stack(limit=5)
+                except Exception:
+                    pass
+                raise RuntimeError("World is None before spawning actor! (reinit attempts exhausted)")
+
         blueprint = CarlaDataProvider.create_blueprint(model, rolename, color, actor_category)
+        if CarlaDataProvider._world is None:
+            timeout = 10.0  # seconds
+            start_time = time.time()
+            while CarlaDataProvider._world is None and (time.time() - start_time) < timeout:
+                if CarlaDataProvider._client is not None:
+                    try:
+                        world = CarlaDataProvider._client.get_world()
+                        CarlaDataProvider.set_world(world)
+                        print("Info: CarlaDataProvider._world was None; reinitialized from client.get_world()")
+                        break
+                    except Exception as e:
+                        print(f"Warning: CarlaDataProvider reinit attempt failed: {e}")
+                else:
+                    print("Warning: CarlaDataProvider._client is None while trying to reinit _world")
+                time.sleep(0.5)
+
+            if CarlaDataProvider._world is None:
+                raise RuntimeError("World is None before spawning actor! (reinit attempts exhausted)")
 
         if random_location:
             actor = None
@@ -549,6 +609,11 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
             _spawn_point.location.x = spawn_point.location.x
             _spawn_point.location.y = spawn_point.location.y
             _spawn_point.location.z = spawn_point.location.z + 0.2
+            # Debug: report the actual spawn point used (helps track small z/yaw offsets)
+            try:
+                print(f"[CDP-DEBUG] trying to spawn at _spawn_point loc=({_spawn_point.location.x:.3f},{_spawn_point.location.y:.3f},{_spawn_point.location.z:.3f}) yaw={_spawn_point.rotation.yaw:.3f}")
+            except Exception:
+                print('[CDP-DEBUG] trying to spawn at _spawn_point (could not format coords)')
             actor = CarlaDataProvider._world.try_spawn_actor(blueprint, _spawn_point)
 
         if actor is None:
@@ -806,6 +871,12 @@ class CarlaDataProvider(object):  # pylint: disable=too-many-public-methods
         CarlaDataProvider._traffic_light_map.clear()
         CarlaDataProvider._map = None
         CarlaDataProvider._world = None
+        print("[CDP.cleanup] cleared world and client")
+        try:
+            import traceback
+            traceback.print_stack(limit=5)
+        except Exception:
+            pass
         CarlaDataProvider._sync_flag = False
         CarlaDataProvider._ego_vehicle_route = None
         CarlaDataProvider._carla_actor_pool = dict()

@@ -1,6 +1,6 @@
 @echo off
 REM ============================================
-REM TCP Environment Setup for CARLA 0.10.0
+REM TCP Environment Setup for CARLA 0.9.10
 REM ============================================
 
 REM Set CARLA root path (adjust if needed)

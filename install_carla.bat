@@ -3,7 +3,7 @@ REM ============================================
 REM Install CARLA Python Package
 REM ============================================
 
-set "CARLA_ROOT=D:\Carla-0.10.0-Win64-Shipping (1)\Carla-0.10.0-Win64-Shipping"
+set "CARLA_ROOT=D:\Carla-0.9.10-Win64-Shipping\Carla-0.9.10-Win64-Shipping"
 set "CARLA_DIST=%CARLA_ROOT%\PythonAPI\carla\dist"
 
 echo ============================================
@@ -32,11 +32,11 @@ echo.
 
 REM Map to wheel filename
 set "WHEEL_FILE="
-if "%PYMAJOR%.%PYMINOR%"=="3.8" set "WHEEL_FILE=carla-0.10.0-cp38-cp38-win_amd64.whl"
-if "%PYMAJOR%.%PYMINOR%"=="3.9" set "WHEEL_FILE=carla-0.10.0-cp39-cp39-win_amd64.whl"
-if "%PYMAJOR%.%PYMINOR%"=="3.10" set "WHEEL_FILE=carla-0.10.0-cp310-cp310-win_amd64.whl"
-if "%PYMAJOR%.%PYMINOR%"=="3.11" set "WHEEL_FILE=carla-0.10.0-cp311-cp311-win_amd64.whl"
-if "%PYMAJOR%.%PYMINOR%"=="3.12" set "WHEEL_FILE=carla-0.10.0-cp312-cp312-win_amd64.whl"
+if "%PYMAJOR%.%PYMINOR%"=="3.8" set "WHEEL_FILE=carla-0.9.10-cp38-cp38-win_amd64.whl"
+if "%PYMAJOR%.%PYMINOR%"=="3.9" set "WHEEL_FILE=carla-0.9.10-cp39-cp39-win_amd64.whl"
+if "%PYMAJOR%.%PYMINOR%"=="3.10" set "WHEEL_FILE=carla-0.9.10-cp310-cp310-win_amd64.whl"
+if "%PYMAJOR%.%PYMINOR%"=="3.11" set "WHEEL_FILE=carla-0.9.10-cp311-cp311-win_amd64.whl"
+if "%PYMAJOR%.%PYMINOR%"=="3.12" set "WHEEL_FILE=carla-0.9.10-cp312-cp312-win_amd64.whl"
 
 if "%WHEEL_FILE%"=="" (
     echo ERROR: No compatible CARLA wheel found for Python %PYMAJOR%.%PYMINOR%

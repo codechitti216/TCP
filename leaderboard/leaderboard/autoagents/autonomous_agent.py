@@ -121,6 +121,11 @@ class AutonomousAgent(object):
         """
         Set the plan (route) for the agent
         """
-        ds_ids = downsample_route(global_plan_world_coord, 50)
+        # Allow override of downsample factor via environment variable for full-route fidelity
+        try:
+            sample_factor = int(os.environ.get('ROUTE_DOWNSAMPLE_FACTOR', 50))
+        except Exception:
+            sample_factor = 50
+        ds_ids = downsample_route(global_plan_world_coord, sample_factor)
         self._global_plan_world_coord = [(global_plan_world_coord[x][0], global_plan_world_coord[x][1]) for x in ds_ids]
         self._global_plan = [global_plan_gps[x] for x in ds_ids]

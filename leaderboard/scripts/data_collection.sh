@@ -1,9 +1,31 @@
 #!/bin/bash
-export CARLA_ROOT= PATH_TO_CARLA
-export CARLA_SERVER=${CARLA_ROOT}/CarlaUE4.sh
-export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI
-export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla
-export PYTHONPATH=$PYTHONPATH:$CARLA_ROOT/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg
+export CARLA_ROOT=${CARLA_ROOT:-""}
+if [ -n "$CARLA_ROOT" ]; then
+	export CARLA_SERVER=${CARLA_ROOT}/CarlaUE4.sh
+	export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI
+	export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla
+	export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg
+else
+	# Try auto-detection similar to run_evaluation.sh
+	CANDIDATES=("$HOME/carla" "/opt/carla" "/home/cthalia/E2E/CARLA/carla_0.9.10" "/usr/local/share/carla")
+	for C in "${CANDIDATES[@]}"; do
+		if [ -d "$C" ]; then
+			export CARLA_ROOT="$C"
+			echo "Auto-detected CARLA_ROOT=$CARLA_ROOT"
+			break
+		fi
+	done
+	if [ -z "$CARLA_ROOT" ]; then
+		echo "Warning: CARLA_ROOT not set. Set CARLA_ROOT to your CARLA install to enable data collection." >&2
+	else
+		export CARLA_SERVER=${CARLA_ROOT}/CarlaUE4.sh
+		export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI
+		export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla
+		if [ -f "${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg" ]; then
+			export PYTHONPATH=$PYTHONPATH:${CARLA_ROOT}/PythonAPI/carla/dist/carla-0.9.10-py3.7-linux-x86_64.egg
+		fi
+	fi
+fi
 export PYTHONPATH=$PYTHONPATH:leaderboard
 export PYTHONPATH=$PYTHONPATH:leaderboard/team_code
 export PYTHONPATH=$PYTHONPATH:scenario_runner
