@@ -1,0 +1,75 @@
+# =============================================================================
+# Preset: Left Turn - Medium Difficulty
+# =============================================================================
+# Left turn at signalized intersection with medium traffic.
+# Tests intersection handling and turn execution.
+# =============================================================================
+
+scenario:
+  name: "left_turn_medium"
+  description: "Left turn at signalized intersection with medium traffic"
+
+maneuver:
+  type: "left_turn"
+  location: "intersection_signal"
+  town: "Town03"
+  spawn_point_index: -1
+
+traffic:
+  vehicles:
+    density: "medium"
+    rule_break_probability: 0.1
+    behaviors:
+      run_red_light: 0.2
+      ignore_stop_sign: 0.1
+      sudden_lane_change: 0.1
+      ignore_right_of_way: 0.1
+      sudden_brake: 0.1
+      tailgate: 0.1
+
+  pedestrians:
+    density: "medium"
+    rule_break_probability: 0.1
+    behaviors:
+      jaywalk: 0.2
+      ignore_signal: 0.1
+      sudden_crossing: 0.1
+      stop_in_road: 0.0
+
+weather:
+  preset: "cloudy"
+
+road:
+  friction: 0.9
+
+evaluation:
+  timeout: 90
+  stuck_timeout: 30
+  stuck_speed_threshold: 0.5
+  success:
+    complete_maneuver: true
+    no_collision: true
+    obey_traffic_lights: true
+    stay_in_lane: true
+  metrics:
+    - "completion_time"
+    - "distance_traveled"
+    - "average_speed"
+    - "max_speed"
+    - "num_collisions"
+    - "collision_types"
+    - "red_lights_run"
+    - "lane_invasions"
+    - "comfort_score"
+
+model:
+  checkpoint: ""
+  device: "cuda"
+
+output:
+  results_dir: "evaluation_results/left_turn_medium"
+  save_video: true
+  video_fps: 20
+  save_logs: true
+  log_level: "info"
+

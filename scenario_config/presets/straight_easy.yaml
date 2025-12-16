@@ -1,0 +1,70 @@
+# =============================================================================
+# Preset: Straight Road - Easy
+# =============================================================================
+# Simple straight driving with light traffic and clear weather.
+# Good for baseline testing.
+# =============================================================================
+
+scenario:
+  name: "straight_easy"
+  description: "Straight road segment with light traffic and clear weather"
+
+maneuver:
+  type: "straight"
+  location: "road_segment"
+  town: "Town01"
+  spawn_point_index: -1
+
+traffic:
+  vehicles:
+    density: "low"
+    rule_break_probability: 0.0
+    behaviors:
+      run_red_light: 0.0
+      ignore_stop_sign: 0.0
+      sudden_lane_change: 0.0
+      ignore_right_of_way: 0.0
+      sudden_brake: 0.0
+      tailgate: 0.0
+
+  pedestrians:
+    density: "low"
+    rule_break_probability: 0.0
+    behaviors:
+      jaywalk: 0.0
+      ignore_signal: 0.0
+      sudden_crossing: 0.0
+      stop_in_road: 0.0
+
+weather:
+  preset: "clear"
+
+road:
+  friction: 1.0
+
+evaluation:
+  timeout: 60
+  stuck_timeout: 20
+  stuck_speed_threshold: 0.5
+  success:
+    complete_maneuver: true
+    no_collision: true
+    obey_traffic_lights: true
+    stay_in_lane: true
+  metrics:
+    - "completion_time"
+    - "distance_traveled"
+    - "average_speed"
+    - "num_collisions"
+    - "comfort_score"
+
+model:
+  checkpoint: ""
+  device: "cuda"
+
+output:
+  results_dir: "evaluation_results/straight_easy"
+  save_video: false
+  save_logs: true
+  log_level: "info"
+

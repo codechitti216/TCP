@@ -1,0 +1,77 @@
+# =============================================================================
+# Preset: Right Turn - Hard Difficulty
+# =============================================================================
+# Right turn at intersection with heavy traffic, rain, and aggressive drivers.
+# Challenging scenario for stress testing.
+# =============================================================================
+
+scenario:
+  name: "right_turn_hard"
+  description: "Right turn with heavy traffic, rain, and aggressive drivers"
+
+maneuver:
+  type: "right_turn"
+  location: "intersection_signal"
+  town: "Town04"
+  spawn_point_index: -1
+
+traffic:
+  vehicles:
+    density: "high"
+    rule_break_probability: 0.4
+    behaviors:
+      run_red_light: 0.5
+      ignore_stop_sign: 0.4
+      sudden_lane_change: 0.4
+      ignore_right_of_way: 0.5
+      sudden_brake: 0.3
+      tailgate: 0.4
+
+  pedestrians:
+    density: "high"
+    rule_break_probability: 0.3
+    behaviors:
+      jaywalk: 0.5
+      ignore_signal: 0.4
+      sudden_crossing: 0.3
+      stop_in_road: 0.1
+
+weather:
+  preset: "heavy_rain"
+
+road:
+  friction: 0.5
+
+evaluation:
+  timeout: 120
+  stuck_timeout: 30
+  stuck_speed_threshold: 0.5
+  success:
+    complete_maneuver: true
+    no_collision: true
+    obey_traffic_lights: true
+    stay_in_lane: true
+  metrics:
+    - "completion_time"
+    - "distance_traveled"
+    - "average_speed"
+    - "max_speed"
+    - "num_collisions"
+    - "collision_types"
+    - "red_lights_run"
+    - "lane_invasions"
+    - "route_deviation"
+    - "comfort_score"
+
+model:
+  checkpoint: ""
+  device: "cuda"
+
+output:
+  results_dir: "evaluation_results/right_turn_hard"
+  save_video: true
+  video_fps: 20
+  save_sensor_data: false
+  save_logs: true
+  log_level: "debug"
+

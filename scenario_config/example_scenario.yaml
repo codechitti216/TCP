@@ -1,0 +1,181 @@
+# =============================================================================
+# TCP Evaluation Scenario Configuration
+# =============================================================================
+# This file defines a complete driving scenario for evaluating the TCP model.
+# =============================================================================
+
+scenario:
+  name: "left_turn_heavy_traffic"
+  description: "Left turn at intersection with heavy traffic and rain"
+  
+# -----------------------------------------------------------------------------
+# Driving Maneuver
+# -----------------------------------------------------------------------------
+maneuver:
+  # Type of maneuver: "straight", "left_turn", "right_turn"
+  type: "left_turn"
+  
+  # Location type: "intersection_signal", "intersection_no_signal", "road_segment"
+  location: "intersection_signal"
+  
+  # Town to use (must have appropriate intersections)
+  # Available: Town01, Town02, Town03, Town04, Town05, Town06, Town07, Town10
+  town: "Town03"
+  
+  # Specific spawn point index (optional, -1 for auto-select based on maneuver)
+  spawn_point_index: -1
+
+# -----------------------------------------------------------------------------
+# Traffic Configuration
+# -----------------------------------------------------------------------------
+traffic:
+  vehicles:
+    # Density: "none", "low", "medium", "high"
+    # none: 0 vehicles, low: 10-20, medium: 30-50, high: 60-100
+    density: "high"
+    
+    # Probability that a vehicle will break traffic rules (0.0 - 1.0)
+    rule_break_probability: 0.3
+    
+    # Specific rule-breaking behaviors (each 0.0 - 1.0, scaled by rule_break_probability)
+    behaviors:
+      # Probability of running red lights
+      run_red_light: 0.5
+      
+      # Probability of ignoring stop signs
+      ignore_stop_sign: 0.4
+      
+      # Probability of sudden lane changes without signaling
+      sudden_lane_change: 0.3
+      
+      # Probability of not yielding right of way
+      ignore_right_of_way: 0.4
+      
+      # Probability of sudden hard braking
+      sudden_brake: 0.2
+      
+      # Probability of tailgating (following too close)
+      tailgate: 0.3
+
+  pedestrians:
+    # Density: "none", "low", "medium", "high"
+    # none: 0, low: 5-10, medium: 15-30, high: 40-60
+    density: "medium"
+    
+    # Probability that a pedestrian will break rules (0.0 - 1.0)
+    rule_break_probability: 0.2
+    
+    # Specific rule-breaking behaviors
+    behaviors:
+      # Probability of jaywalking (crossing outside crosswalks)
+      jaywalk: 0.6
+      
+      # Probability of ignoring pedestrian signals
+      ignore_signal: 0.4
+      
+      # Probability of suddenly walking into traffic
+      sudden_crossing: 0.3
+      
+      # Probability of standing/stopping in the road
+      stop_in_road: 0.1
+
+# -----------------------------------------------------------------------------
+# Weather Configuration
+# -----------------------------------------------------------------------------
+weather:
+  # Preset: "clear", "cloudy", "wet", "rain", "heavy_rain", "fog", "night", "custom"
+  preset: "rain"
+  
+  # Custom weather parameters (only used if preset is "custom")
+  # All values are 0.0 - 100.0 unless otherwise noted
+  custom:
+    cloudiness: 80.0
+    precipitation: 60.0
+    precipitation_deposits: 50.0  # Puddles on ground
+    wind_intensity: 30.0
+    fog_density: 10.0
+    fog_distance: 75.0  # Distance at which fog starts (meters)
+    fog_falloff: 1.0
+    wetness: 80.0
+    sun_azimuth_angle: 45.0    # 0-360 degrees
+    sun_altitude_angle: 45.0   # -90 to 90 degrees (negative = night)
+
+# -----------------------------------------------------------------------------
+# Road Conditions
+# -----------------------------------------------------------------------------
+road:
+  # Global friction coefficient (0.0 - 1.0)
+  # 1.0 = normal dry road, 0.5 = wet, 0.3 = icy, 0.1 = very slippery
+  friction: 0.7
+
+# -----------------------------------------------------------------------------
+# Evaluation Settings
+# -----------------------------------------------------------------------------
+evaluation:
+  # Maximum time to complete the maneuver (seconds)
+  timeout: 120
+  
+  # Time to wait if vehicle stops (seconds) before considering it stuck
+  stuck_timeout: 30
+  
+  # Minimum speed to not be considered "stuck" (m/s)
+  stuck_speed_threshold: 0.5
+  
+  # Success criteria
+  success:
+    # Must complete the maneuver (reach end point)
+    complete_maneuver: true
+    
+    # Must not have any collisions
+    no_collision: true
+    
+    # Must not run red lights (for ego vehicle)
+    obey_traffic_lights: true
+    
+    # Must stay in lane (except for lane changes)
+    stay_in_lane: true
+
+  # Metrics to log
+  metrics:
+    # Log these metrics during evaluation
+    - "completion_time"
+    - "distance_traveled"
+    - "average_speed"
+    - "max_speed"
+    - "num_collisions"
+    - "collision_types"
+    - "red_lights_run"
+    - "lane_invasions"
+    - "route_deviation"
+    - "comfort_score"  # Based on jerk/acceleration
+
+# -----------------------------------------------------------------------------
+# Model Configuration
+# -----------------------------------------------------------------------------
+model:
+  # Path to the trained TCP model checkpoint
+  checkpoint: "path/to/model/checkpoint.pth"
+  
+  # Device to run inference on
+  device: "cuda"
+
+# -----------------------------------------------------------------------------
+# Logging and Output
+# -----------------------------------------------------------------------------
+output:
+  # Directory to save results
+  results_dir: "evaluation_results"
+  
+  # Save video recording of the scenario
+  save_video: true
+  video_fps: 20
+  
+  # Save sensor data (images, etc.)
+  save_sensor_data: false
+  
+  # Save detailed logs
+  save_logs: true
+  
+  # Log level: "debug", "info", "warning", "error"
+  log_level: "info"
+

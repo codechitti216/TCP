@@ -1,0 +1,83 @@
+# =============================================================================
+# Preset: Night Fog Challenge
+# =============================================================================
+# Straight driving at night with heavy fog and unpredictable pedestrians.
+# Tests perception in low visibility conditions.
+# =============================================================================
+
+scenario:
+  name: "night_fog_challenge"
+  description: "Night driving with heavy fog and unpredictable pedestrians"
+
+maneuver:
+  type: "straight"
+  location: "road_segment"
+  town: "Town05"
+  spawn_point_index: -1
+
+traffic:
+  vehicles:
+    density: "low"
+    rule_break_probability: 0.2
+    behaviors:
+      run_red_light: 0.3
+      ignore_stop_sign: 0.2
+      sudden_lane_change: 0.2
+      ignore_right_of_way: 0.2
+      sudden_brake: 0.4
+      tailgate: 0.1
+
+  pedestrians:
+    density: "medium"
+    rule_break_probability: 0.5
+    behaviors:
+      jaywalk: 0.7
+      ignore_signal: 0.6
+      sudden_crossing: 0.5
+      stop_in_road: 0.2
+
+weather:
+  preset: "custom"
+  custom:
+    cloudiness: 30.0
+    precipitation: 0.0
+    precipitation_deposits: 20.0
+    wind_intensity: 10.0
+    fog_density: 70.0
+    fog_distance: 15.0
+    fog_falloff: 2.0
+    wetness: 30.0
+    sun_azimuth_angle: 270.0
+    sun_altitude_angle: -60.0
+
+road:
+  friction: 0.8
+
+evaluation:
+  timeout: 90
+  stuck_timeout: 25
+  stuck_speed_threshold: 0.3
+  success:
+    complete_maneuver: true
+    no_collision: true
+    obey_traffic_lights: true
+    stay_in_lane: true
+  metrics:
+    - "completion_time"
+    - "distance_traveled"
+    - "average_speed"
+    - "num_collisions"
+    - "collision_types"
+    - "comfort_score"
+
+model:
+  checkpoint: ""
+  device: "cuda"
+
+output:
+  results_dir: "evaluation_results/night_fog_challenge"
+  save_video: true
+  video_fps: 20
+  save_logs: true
+  log_level: "info"
+
